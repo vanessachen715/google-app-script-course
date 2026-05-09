@@ -453,6 +453,43 @@ function 初始化員工資料() {
   SpreadsheetApp.getUi().alert("✅ 員工資料已建立！共 " + 資料.length + " 筆");
 }
 
+/**
+ * 備份「員工資料」工作表
+ * 說明：將「員工資料」工作表複製一份，並命名為「員工資料_備份_日期」
+ */
+function 備份員工資料() {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("員工資料");
+    
+    if (!sheet) {
+      SpreadsheetApp.getUi().alert("❌ 找不到「員工資料」工作表，請先點選「初始化員工資料」。");
+      return;
+    }
+    
+    var 今天 = new Date();
+    var 日期字串 = Utilities.formatDate(今天, "Asia/Taipei", "yyyyMMdd");
+    var 新表名 = "員工資料_備份_" + 日期字串;
+    
+    // 檢查工作表是否已存在，若存在則加上時間以避免名稱重複錯誤
+    var 既有表 = ss.getSheetByName(新表名);
+    if (既有表) {
+      日期字串 = Utilities.formatDate(今天, "Asia/Taipei", "yyyyMMdd_HHmmss");
+      新表名 = "員工資料_備份_" + 日期字串;
+    }
+    
+    var 備份表 = sheet.copyTo(ss);
+    備份表.setName(新表名);
+    
+    Logger.log("✅ 已備份員工資料：" + 新表名);
+    SpreadsheetApp.getUi().alert("✅ 備份完成！\n新工作表名稱：「" + 新表名 + "」");
+
+  } catch (錯誤) {
+    Logger.log("❌ 錯誤：" + 錯誤.message);
+    SpreadsheetApp.getUi().alert("❌ 錯誤：" + 錯誤.message);
+  }
+}
+
 // ============================================================
 // 自訂選單
 // ============================================================
@@ -466,6 +503,7 @@ function onOpen() {
     .addItem("📝 讀寫儲存格示範", "讀寫儲存格示範")
     .addSeparator()
     .addItem("📅 建立當月報表", "自動建立月報表")
+    .addItem("💾 備份員工資料", "備份員工資料")
     .addItem("⏰ 設定每日觸發器", "設定每日觸發器")
     .addItem("🗑️ 刪除所有觸發器", "刪除所有觸發器")
     .addToUi();
